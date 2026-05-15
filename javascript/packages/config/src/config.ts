@@ -65,6 +65,7 @@ export type FormatterConfig = {
   exclude?: string[]
   indentWidth?: number
   maxLineLength?: number
+  noSplitClasses?: boolean
   rewriter?: {
     pre?: string[]
     post?: string[]

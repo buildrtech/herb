@@ -155,7 +155,7 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
     this.indentWidth = options.indentWidth
     this.maxLineLength = options.maxLineLength
     this.textFlow = new TextFlowEngine(this)
-    this.attributeRenderer = new AttributeRenderer(this, this.maxLineLength, this.indentWidth)
+    this.attributeRenderer = new AttributeRenderer(this, this.maxLineLength, this.indentWidth, options.noSplitClasses)
     this.spacingAnalyzer = new SpacingAnalyzer(this.nodeIsMultiline)
   }
 

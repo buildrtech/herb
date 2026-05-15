@@ -43,6 +43,19 @@ describe("Attribute formatting", () => {
       `)
     })
 
+    test("keeps long class lists inline when noSplitClasses is enabled", () => {
+      const source = `<div class="very-long-class-name another-very-long-class-name yet-another-extremely-long-class-name final-extremely-long-class-name">Content</div>`
+      const formatter = new Formatter(Herb, { maxLineLength: 80, noSplitClasses: true })
+
+      const result = formatter.format(source)
+
+      expect(result).toBe(dedent`
+        <div class="very-long-class-name another-very-long-class-name yet-another-extremely-long-class-name final-extremely-long-class-name">
+          Content
+        </div>
+      `)
+    })
+
     test("collapses multiline class attributes when they're short", () => {
       const source = dedent`
         <div class="container

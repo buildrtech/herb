@@ -5,6 +5,7 @@ import type { ASTRewriter, StringRewriter } from "@herb-tools/rewriter"
  *
  * indentWidth: number of spaces per indentation level.
  * maxLineLength: maximum line length before wrapping text or attributes.
+ * noSplitClasses: prevent class attribute values from being split across multiple lines.
  * preRewriters: AST rewriters to run before formatting.
  * postRewriters: String rewriters to run after formatting.
  */
@@ -13,6 +14,8 @@ export interface FormatOptions {
   indentWidth?: number
   /** maximum line length before wrapping; defaults to 80 */
   maxLineLength?: number
+  /** prevent class attribute values from being split across multiple lines; defaults to false */
+  noSplitClasses?: boolean
   /** Pre-format rewriters (transform AST before formatting); defaults to [] */
   preRewriters?: ASTRewriter[]
   /** Post-format rewriters (transform string after formatting); defaults to [] */
@@ -25,6 +28,7 @@ export interface FormatOptions {
 export const defaultFormatOptions: Required<FormatOptions> = {
   indentWidth: 2,
   maxLineLength: 80,
+  noSplitClasses: false,
   preRewriters: [],
   postRewriters: [],
 }
@@ -40,6 +44,7 @@ export function resolveFormatOptions(
   return {
     indentWidth: options.indentWidth ?? defaultFormatOptions.indentWidth,
     maxLineLength: options.maxLineLength ?? defaultFormatOptions.maxLineLength,
+    noSplitClasses: options.noSplitClasses ?? defaultFormatOptions.noSplitClasses,
     preRewriters: options.preRewriters ?? defaultFormatOptions.preRewriters,
     postRewriters: options.postRewriters ?? defaultFormatOptions.postRewriters,
   }

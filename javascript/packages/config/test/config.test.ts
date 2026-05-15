@@ -135,7 +135,8 @@ describe("@herb-tools/config", () => {
         formatter: {
           enabled: true,
           indentWidth: 4,
-          maxLineLength: 120
+          maxLineLength: 120,
+          noSplitClasses: true
         }
       }
 
@@ -144,6 +145,7 @@ describe("@herb-tools/config", () => {
       expect(config.config.formatter?.enabled).toBe(true)
       expect(config.config.formatter?.indentWidth).toBe(4)
       expect(config.config.formatter?.maxLineLength).toBe(120)
+      expect(config.config.formatter?.noSplitClasses).toBe(true)
     })
 
     test("uses custom version when provided", () => {
@@ -176,7 +178,8 @@ describe("@herb-tools/config", () => {
       const mutation: HerbConfigOptions = {
         formatter: {
           enabled: true,
-          indentWidth: 4
+          indentWidth: 4,
+          noSplitClasses: true
         }
       }
 
@@ -185,6 +188,7 @@ describe("@herb-tools/config", () => {
       expect(yamlString).toContain("formatter:")
       expect(yamlString).toContain("enabled: true")
       expect(yamlString).toContain("indentWidth: 4")
+      expect(yamlString).toContain("noSplitClasses: true")
     })
   })
 

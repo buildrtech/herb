@@ -24,6 +24,7 @@ export class AttributeRenderer {
   private delegate: AttributeRendererDelegate
   private maxLineLength: number
   private indentWidth: number
+  private noSplitClasses: boolean
 
   public currentAttributeName: string | null = null
   public indentLevel: number = 0
@@ -32,10 +33,12 @@ export class AttributeRenderer {
     delegate: AttributeRendererDelegate,
     maxLineLength: number,
     indentWidth: number,
+    noSplitClasses: boolean = false,
   ) {
     this.delegate = delegate
     this.maxLineLength = maxLineLength
     this.indentWidth = indentWidth
+    this.noSplitClasses = noSplitClasses
   }
 
   /**
@@ -96,6 +99,8 @@ export class AttributeRenderer {
   }
 
   wouldClassAttributeBeMultiline(content: string, indentLength: number): boolean {
+    if (this.noSplitClasses) return false
+
     const normalizedContent = content.replace(ASCII_WHITESPACE, ' ').trim()
     const hasActualNewlines = /\r?\n/.test(content)
 
@@ -146,6 +151,8 @@ export class AttributeRenderer {
           const name = attribute.name ? getCombinedAttributeName(attribute.name) : ""
 
           if (name === "class") {
+            if (this.noSplitClasses) return false
+
             const normalizedContent = content.replace(ASCII_WHITESPACE, ' ').trim()
 
             return normalizedContent.length > 80
@@ -165,6 +172,11 @@ export class AttributeRenderer {
 
   formatClassAttribute(content: string, name: string, equals: string, open_quote: string, close_quote: string): string {
     const normalizedContent = content.replace(ASCII_WHITESPACE, ' ').trim()
+
+    if (this.noSplitClasses) {
+      return open_quote + normalizedContent + close_quote
+    }
+
     const hasActualNewlines = /\r?\n/.test(content)
 
     if (hasActualNewlines && normalizedContent.length > 80) {

@@ -55,6 +55,7 @@ export class CLI {
       --force                         force formatting even if disabled in .herb.yml
       --indent-width <number>         number of spaces per indentation level (default: 2)
       --max-line-length <number>      maximum line length before wrapping (default: 80)
+      --no-split-classes             prevent class attribute values from being split across multiple lines
 
     Examples:
       herb-format                                 # Format all configured files in current directory
@@ -71,6 +72,7 @@ export class CLI {
       herb-format --force                         # Format even if disabled in project config
       herb-format --indent-width 4                # Format with 4-space indentation
       herb-format --max-line-length 100           # Format with 100-character line limit
+      herb-format --no-split-classes              # Keep class attribute values on one line
       cat template.html.erb | herb-format         # Format from stdin to stdout
   `
 
@@ -85,7 +87,8 @@ export class CLI {
         init: { type: "boolean" },
         "config-file": { type: "string" },
         "indent-width": { type: "string" },
-        "max-line-length": { type: "string" }
+        "max-line-length": { type: "string" },
+        "no-split-classes": { type: "boolean" }
       },
       allowPositionals: true
     })
@@ -129,12 +132,13 @@ export class CLI {
       isInitMode: values.init,
       configFile: values["config-file"],
       indentWidth,
-      maxLineLength
+      maxLineLength,
+      noSplitClasses: values["no-split-classes"]
     }
   }
 
   async run() {
-    const { positionals, isCheckMode, isVersionMode, isForceMode, isInitMode, configFile, indentWidth, maxLineLength } = this.parseArguments()
+    const { positionals, isCheckMode, isVersionMode, isForceMode, isInitMode, configFile, indentWidth, maxLineLength, noSplitClasses } = this.parseArguments()
 
     try {
       await Herb.load()
@@ -217,6 +221,10 @@ export class CLI {
 
       if (maxLineLength !== undefined) {
         formatterConfig.maxLineLength = maxLineLength
+      }
+
+      if (noSplitClasses) {
+        formatterConfig.noSplitClasses = true
       }
 
       const preRewriters: ASTRewriter[] = []

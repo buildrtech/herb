@@ -36,6 +36,7 @@ export class Formatter {
     const mergedOptions: FormatOptions = {
       indentWidth: options.indentWidth ?? formatterConfig.indentWidth,
       maxLineLength: options.maxLineLength ?? formatterConfig.maxLineLength,
+      noSplitClasses: options.noSplitClasses ?? formatterConfig.noSplitClasses,
       preRewriters: options.preRewriters,
       postRewriters: options.postRewriters,
     }

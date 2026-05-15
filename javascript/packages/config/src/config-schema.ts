@@ -41,6 +41,7 @@ export const FormatterConfigSchema = z.object({
   exclude: z.array(z.string()).optional().describe("Glob patterns to exclude from formatting"),
   indentWidth: z.number().int().positive().optional().describe("Number of spaces per indentation level"),
   maxLineLength: z.number().int().positive().optional().describe("Maximum line length before wrapping"),
+  noSplitClasses: z.boolean().optional().describe("Prevent class attribute values from being split across multiple lines"),
   rewriter: RewriterConfigSchema.describe("Rewriter configuration for pre and post-format transformations"),
 }).strict().optional()
 

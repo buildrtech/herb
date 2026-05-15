@@ -388,6 +388,26 @@ describe("CLI Binary", () => {
     expect(result.stdout).toContain("wraps")
   })
 
+  it("should show --no-split-classes option in help", async () => {
+    const result = await execBinary(["--help"])
+
+    expectExitCode(result, 0)
+    expect(result.stdout).toContain("herb-format --no-split-classes")
+    expect(result.stdout).toContain("prevent class attribute values from being split")
+  })
+
+  it("should accept --no-split-classes", async () => {
+    const input = '<div class="very-long-class-name another-very-long-class-name yet-another-extremely-long-class-name final-extremely-long-class-name">Content</div>'
+    const result = await execBinary(["--no-split-classes"], input)
+
+    expectExitCode(result, 0)
+    expect(result.stdout).toBe(dedent`
+      <div class="very-long-class-name another-very-long-class-name yet-another-extremely-long-class-name final-extremely-long-class-name">
+        Content
+      </div>
+    ` + "\n")
+  })
+
   describe("Glob Pattern Support", () => {
     beforeEach(async () => {
       await mkdir("test-fixtures", { recursive: true })

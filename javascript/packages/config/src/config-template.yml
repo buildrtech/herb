@@ -78,6 +78,7 @@ formatter:
   enabled: false
   indentWidth: 2
   maxLineLength: 80
+  noSplitClasses: false
 
   # # Additional patterns beyond the defaults for formatting
   # include:
