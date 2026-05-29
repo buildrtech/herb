@@ -95,6 +95,32 @@ describe("ERB whitespace formatting", () => {
       expect(result).toEqual(source)
     })
 
+    test("preserves tag attribute spacing in blocks with trim-aware text", () => {
+      const source = dedent`
+        <% row.with_cell(primary: true) do %>
+          <div class="w-full">
+            <div class="flex justify-between">
+              <%= pluralize(report_view.results.count, "Result") -%><% if report_view.truncate? -%>, only showing
+                <%= Report.maximum_results_count %><% end %>
+            </div>
+          </div>
+        <% end %>
+      `
+      const result = formatter.format(source)
+
+      expect(result).toEqual(dedent`
+        <% row.with_cell(primary: true) do %>
+          <div class="w-full">
+            <div class="flex justify-between">
+              <%= pluralize(report_view.results.count, "Result") -%><% if report_view.truncate? -%>, only showing
+                <%= Report.maximum_results_count %><% end %>
+
+            </div>
+          </div>
+        <% end %>
+      `)
+    })
+
     test("verifies formatERBContent utility function behavior through working cases", () => {
       expect(formatter.format('<%=content%>')).toEqual('<%= content %>')
       expect(formatter.format('<%=  spaced  %>')).toEqual('<%= spaced %>')

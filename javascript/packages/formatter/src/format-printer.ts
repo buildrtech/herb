@@ -734,13 +734,33 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
     this.stringLineCount += text.split("\n").length - 1
   }
 
+  private sourceSliceForNode(node: Node): string {
+    if (!node.location) return IdentityPrinter.print(node)
+
+    return this.source.slice(
+      this.offsetForPosition(node.location.start.line, node.location.start.column),
+      this.offsetForPosition(node.location.end.line, node.location.end.column)
+    )
+  }
+
+  private offsetForPosition(line: number, column: number): number {
+    const lines = this.source.split("\n")
+    let offset = 0
+
+    for (let index = 0; index < line - 1; index++) {
+      offset += lines[index].length + 1
+    }
+
+    return offset + column
+  }
+
   private visitContentPreservingERBBlock(node: ERBBlockNode): void {
     for (const child of node.body) {
-      this.pushRawToLastLine(IdentityPrinter.print(child))
+      this.pushRawToLastLine(this.sourceSliceForNode(child))
     }
 
     if (node.end_node) {
-      this.pushRawToLastLine(this.reconstructERBNode(node.end_node, true))
+      this.pushRawToLastLine(this.sourceSliceForNode(node.end_node))
     }
   }
 
@@ -1160,7 +1180,7 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
 
   visitERBIfNode(node: ERBIfNode) {
     if (this.hasRenderedWhitespaceSensitiveERBIf(node)) {
-      this.pushRawToLastLine(IdentityPrinter.print(node))
+      this.pushRawToLastLine(this.sourceSliceForNode(node))
       return
     }
 

@@ -69680,6 +69680,9 @@ class FormatPrinter extends Printer {
             if (isNode(node, ERBUnlessNode)) {
                 return this.hasRenderedWhitespaceSensitiveContent(node.statements);
             }
+            if (isNode(node, HTMLElementNode)) {
+                return this.hasRenderedWhitespaceSensitiveContent(node.body);
+            }
             return false;
         });
     }
@@ -69720,12 +69723,25 @@ class FormatPrinter extends Printer {
         this.pushToLastLine(text);
         this.stringLineCount += text.split("\n").length - 1;
     }
+    sourceSliceForNode(node) {
+        if (!node.location)
+            return IdentityPrinter.print(node);
+        return this.source.slice(this.offsetForPosition(node.location.start.line, node.location.start.column), this.offsetForPosition(node.location.end.line, node.location.end.column));
+    }
+    offsetForPosition(line, column) {
+        const lines = this.source.split("\n");
+        let offset = 0;
+        for (let index = 0; index < line - 1; index++) {
+            offset += lines[index].length + 1;
+        }
+        return offset + column;
+    }
     visitContentPreservingERBBlock(node) {
         for (const child of node.body) {
-            this.pushRawToLastLine(IdentityPrinter.print(child));
+            this.pushRawToLastLine(this.sourceSliceForNode(child));
         }
         if (node.end_node) {
-            this.pushRawToLastLine(this.reconstructERBNode(node.end_node, true));
+            this.pushRawToLastLine(this.sourceSliceForNode(node.end_node));
         }
     }
     visitInlineElementBody(body, tagName, hasTextFlow, children) {
@@ -70075,7 +70091,7 @@ class FormatPrinter extends Printer {
     }
     visitERBIfNode(node) {
         if (this.hasRenderedWhitespaceSensitiveERBIf(node)) {
-            this.pushRawToLastLine(IdentityPrinter.print(node));
+            this.pushRawToLastLine(this.sourceSliceForNode(node));
             return;
         }
         this.trackBoundary(node, () => {

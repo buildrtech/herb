@@ -115,6 +115,8 @@ export declare class FormatPrinter extends Printer implements TextFlowDelegate, 
     private hasRenderedWhitespaceSensitiveSiblingContent;
     private hasRenderedWhitespaceSensitiveERBIf;
     private pushRawToLastLine;
+    private sourceSliceForNode;
+    private offsetForPosition;
     private visitContentPreservingERBBlock;
     private visitInlineElementBody;
     /**
