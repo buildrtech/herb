@@ -69663,6 +69663,21 @@ class FormatPrinter extends Printer {
             });
         });
     }
+    isContentPreservingERBBlock(node) {
+        return /^\s*javascript_tag(?:\s|\()/.test(node.content?.value ?? "");
+    }
+    pushRawToLastLine(text) {
+        this.pushToLastLine(text);
+        this.stringLineCount += text.split("\n").length - 1;
+    }
+    visitContentPreservingERBBlock(node) {
+        for (const child of node.body) {
+            this.pushRawToLastLine(IdentityPrinter.print(child));
+        }
+        if (node.end_node) {
+            this.pushRawToLastLine(this.reconstructERBNode(node.end_node, true));
+        }
+    }
     visitInlineElementBody(body, tagName, hasTextFlow, children) {
         if (children.length === 0)
             return;
@@ -69985,6 +70000,10 @@ class FormatPrinter extends Printer {
     visitERBBlockNode(node) {
         this.trackBoundary(node, () => {
             this.printERBNode(node);
+            if (this.isContentPreservingERBBlock(node)) {
+                this.visitContentPreservingERBBlock(node);
+                return;
+            }
             this.withIndent(() => {
                 const hasTextFlow = this.textFlow.isInTextFlowContext(node.body);
                 if (hasTextFlow) {

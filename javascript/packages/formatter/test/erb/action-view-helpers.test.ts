@@ -71,4 +71,26 @@ describe("@herb-tools/formatter - ActionView Helpers", () => {
     const result = formatter.format(source)
     expect(result).toEqual(source)
   })
+
+  test("javascript_tag ERB block preserves JavaScript with ERB control flow", () => {
+    const erbBlockFormatter = new Formatter(Herb, {
+      indentWidth: 2,
+      maxLineLength: 80,
+    })
+    const source = dedent`
+      <%= turbo_stream.append_all "head" do %>
+        <%= javascript_tag(nonce: true, data: {turbo_cache: false}) do %>
+          window.Turbo.visit("<%= escape_javascript(response.location) %>", {
+            frame: "<%= escape_javascript(turbo_frame) %>",
+            <% if turbo_action.present? %>
+            action: "<%= escape_javascript(turbo_action) %>",
+            <% end %>
+          })
+          document.currentScript.remove()
+        <% end %>
+      <% end %>
+    `
+    const result = erbBlockFormatter.format(source)
+    expect(result).toEqual(source)
+  })
 })

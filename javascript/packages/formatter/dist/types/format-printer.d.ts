@@ -110,6 +110,9 @@ export declare class FormatPrinter extends Printer implements TextFlowDelegate, 
     visitHTMLConditionalOpenTagNode(node: HTMLConditionalOpenTagNode): void;
     visitHTMLElementBody(body: Node[], element: HTMLElementNode): void;
     private visitContentPreservingBody;
+    private isContentPreservingERBBlock;
+    private pushRawToLastLine;
+    private visitContentPreservingERBBlock;
     private visitInlineElementBody;
     /**
      * Visit element children with intelligent spacing logic

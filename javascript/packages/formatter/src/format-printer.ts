@@ -664,6 +664,25 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
     })
   }
 
+  private isContentPreservingERBBlock(node: ERBBlockNode): boolean {
+    return /^\s*javascript_tag(?:\s|\()/.test(node.content?.value ?? "")
+  }
+
+  private pushRawToLastLine(text: string): void {
+    this.pushToLastLine(text)
+    this.stringLineCount += text.split("\n").length - 1
+  }
+
+  private visitContentPreservingERBBlock(node: ERBBlockNode): void {
+    for (const child of node.body) {
+      this.pushRawToLastLine(IdentityPrinter.print(child))
+    }
+
+    if (node.end_node) {
+      this.pushRawToLastLine(this.reconstructERBNode(node.end_node, true))
+    }
+  }
+
   private visitInlineElementBody(body: Node[], tagName: string, hasTextFlow: boolean, children: Node[]) {
     if (children.length === 0) return
 
@@ -1055,6 +1074,11 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
   visitERBBlockNode(node: ERBBlockNode) {
     this.trackBoundary(node, () => {
       this.printERBNode(node)
+
+      if (this.isContentPreservingERBBlock(node)) {
+        this.visitContentPreservingERBBlock(node)
+        return
+      }
 
       this.withIndent(() => {
         const hasTextFlow = this.textFlow.isInTextFlowContext(node.body)
