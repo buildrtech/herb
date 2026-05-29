@@ -549,7 +549,7 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
       if (lastMeaningfulNode && !hasHandledSpacing) {
         const shouldAddSpacing = this.spacingAnalyzer.shouldAddSpacingBetweenSiblings( null, children, i)
 
-        if (shouldAddSpacing) {
+        if (shouldAddSpacing && this.spacingAnalyzer.hasBlankLineBetween(children, i)) {
           this.lines.splice(childStartLine, 0, "")
           this.stringLineCount++
         }
@@ -756,6 +756,10 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
     return offset + column
   }
 
+  private isMultilineSourceNode(node: Node): boolean {
+    return !!node.location && node.location.start.line !== node.location.end.line
+  }
+
   private visitContentPreservingERBBlock(node: ERBBlockNode): void {
     for (const child of node.body) {
       this.pushRawToLastLine(this.sourceSliceForNode(child))
@@ -873,7 +877,7 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
       if (lastMeaningfulNode && !hasHandledSpacing) {
         const shouldAddSpacing = this.spacingAnalyzer.shouldAddSpacingBetweenSiblings(parentElement, body, index)
 
-        if (shouldAddSpacing) {
+        if (shouldAddSpacing && this.spacingAnalyzer.hasBlankLineBetween(body, index)) {
           this.lines.splice(childStartLine, 0, "")
           this.stringLineCount++
         }
@@ -932,7 +936,7 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
     if (this.currentElement && this.elementFormattingAnalysis.has(this.currentElement)) {
       const analysis = this.elementFormattingAnalysis.get(this.currentElement)!
 
-      if (analysis.openTagInline) {
+      if (analysis.openTagInline && !this.isMultilineSourceNode(node)) {
         const inline = this.renderInlineOpen(getTagName(node), attributes, isSelfClosing, inlineNodes, node.children)
 
         this.push(this.inlineMode ? inline : this.indent + inline)
@@ -957,7 +961,7 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
       attributes
     )
 
-    if (shouldKeepInline) {
+    if (shouldKeepInline && !this.isMultilineSourceNode(node)) {
       this.push(this.inlineMode ? inline : this.indent + inline)
     } else {
       this.renderMultilineAttributes(getTagName(node), node.children, isSelfClosing)

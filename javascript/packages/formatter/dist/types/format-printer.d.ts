@@ -117,6 +117,7 @@ export declare class FormatPrinter extends Printer implements TextFlowDelegate, 
     private pushRawToLastLine;
     private sourceSliceForNode;
     private offsetForPosition;
+    private isMultilineSourceNode;
     private visitContentPreservingERBBlock;
     private visitInlineElementBody;
     /**

@@ -9767,7 +9767,7 @@ class FormatPrinter extends Printer {
             this.visit(child);
             if (lastMeaningfulNode && !hasHandledSpacing) {
                 const shouldAddSpacing = this.spacingAnalyzer.shouldAddSpacingBetweenSiblings(null, children, i);
-                if (shouldAddSpacing) {
+                if (shouldAddSpacing && this.spacingAnalyzer.hasBlankLineBetween(children, i)) {
                     this.lines.splice(childStartLine, 0, "");
                     this.stringLineCount++;
                 }
@@ -9935,6 +9935,9 @@ class FormatPrinter extends Printer {
         }
         return offset + column;
     }
+    isMultilineSourceNode(node) {
+        return !!node.location && node.location.start.line !== node.location.end.line;
+    }
     visitContentPreservingERBBlock(node) {
         for (const child of node.body) {
             this.pushRawToLastLine(this.sourceSliceForNode(child));
@@ -10036,7 +10039,7 @@ class FormatPrinter extends Printer {
             this.visit(child);
             if (lastMeaningfulNode && !hasHandledSpacing) {
                 const shouldAddSpacing = this.spacingAnalyzer.shouldAddSpacingBetweenSiblings(parentElement, body, index);
-                if (shouldAddSpacing) {
+                if (shouldAddSpacing && this.spacingAnalyzer.hasBlankLineBetween(body, index)) {
                     this.lines.splice(childStartLine, 0, "");
                     this.stringLineCount++;
                 }
@@ -10082,7 +10085,7 @@ class FormatPrinter extends Printer {
         }
         if (this.currentElement && this.elementFormattingAnalysis.has(this.currentElement)) {
             const analysis = this.elementFormattingAnalysis.get(this.currentElement);
-            if (analysis.openTagInline) {
+            if (analysis.openTagInline && !this.isMultilineSourceNode(node)) {
                 const inline = this.renderInlineOpen(getTagName(node), attributes, isSelfClosing, inlineNodes, node.children);
                 this.push(this.inlineMode ? inline : this.indent + inline);
                 return;
@@ -10096,7 +10099,7 @@ class FormatPrinter extends Printer {
         const totalAttributeCount = this.getTotalAttributeCount(attributes, inlineNodes);
         this.attributeRenderer.indentLevel = this.indentLevel;
         const shouldKeepInline = this.attributeRenderer.shouldRenderInline(totalAttributeCount, inline.length, this.indent.length, this.maxLineLength, false, this.attributeRenderer.hasMultilineAttributes(attributes), attributes);
-        if (shouldKeepInline) {
+        if (shouldKeepInline && !this.isMultilineSourceNode(node)) {
             this.push(this.inlineMode ? inline : this.indent + inline);
         }
         else {
