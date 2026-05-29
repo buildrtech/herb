@@ -66,6 +66,35 @@ describe("ERB whitespace formatting", () => {
       expect(result).toEqual('<p>Hello <%= name %>, welcome!</p>')
     })
 
+    test("preserves literal punctuation around multiline ERB output in control flow", () => {
+      const source = dedent`
+        <% if billing_period.closed_month? %>
+          <%= billing_period.formatted_estimated_gp_at_completion %>
+          (<%= number_to_percentage(
+            billing_period.gp_margin&.then { |v| v * 100 },
+            precision: 2,
+          ) %>)
+        <% else %>
+          -
+        <% end %>
+      `
+      const result = formatter.format(source)
+
+      expect(result).toEqual(source)
+    })
+
+    test("preserves trim-aware inline text around ERB control flow", () => {
+      const source = dedent`
+        <% row.with_cell(primary: true) do %>
+          <%= pluralize(report_view.results.count, "Result") -%><% if report_view.truncate? -%>, only showing
+            <%= Report.maximum_results_count %><% end %>
+        <% end %>
+      `
+      const result = formatter.format(source)
+
+      expect(result).toEqual(source)
+    })
+
     test("verifies formatERBContent utility function behavior through working cases", () => {
       expect(formatter.format('<%=content%>')).toEqual('<%= content %>')
       expect(formatter.format('<%=  spaced  %>')).toEqual('<%= spaced %>')

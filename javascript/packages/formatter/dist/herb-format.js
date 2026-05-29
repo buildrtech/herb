@@ -69664,7 +69664,57 @@ class FormatPrinter extends Printer {
         });
     }
     isContentPreservingERBBlock(node) {
-        return /^\s*javascript_tag(?:\s|\()/.test(node.content?.value ?? "");
+        return /^\s*javascript_tag(?:\s|\()/.test(node.content?.value ?? "")
+            || this.hasRenderedWhitespaceSensitiveContent(node.body);
+    }
+    hasRenderedWhitespaceSensitiveContent(nodes) {
+        if (this.hasRenderedWhitespaceSensitiveSiblingContent(nodes))
+            return true;
+        return nodes.some(node => {
+            if (isNode(node, ERBIfNode)) {
+                return this.hasRenderedWhitespaceSensitiveERBIf(node);
+            }
+            if (isNode(node, ERBElseNode)) {
+                return this.hasRenderedWhitespaceSensitiveContent(node.statements);
+            }
+            if (isNode(node, ERBUnlessNode)) {
+                return this.hasRenderedWhitespaceSensitiveContent(node.statements);
+            }
+            return false;
+        });
+    }
+    hasRenderedWhitespaceSensitiveSiblingContent(nodes) {
+        let hasERBOutput = false;
+        let hasSensitiveLiteralText = false;
+        let hasTrimMarker = false;
+        for (const node of nodes) {
+            if (isNode(node, ERBContentNode)) {
+                const source = IdentityPrinter.print(node);
+                hasERBOutput = true;
+                hasTrimMarker = hasTrimMarker
+                    || source.includes("-%>")
+                    || source.includes("<%-");
+            }
+            else if (isERBControlFlowNode(node)) {
+                const source = IdentityPrinter.print(node);
+                hasTrimMarker = hasTrimMarker
+                    || source.includes("-%>")
+                    || source.includes("<%-");
+            }
+            else if (isNode(node, HTMLTextNode)) {
+                const text = node.content.trim();
+                if (text && /^[,.;:!?()[\]{}]/.test(text)) {
+                    hasSensitiveLiteralText = true;
+                }
+            }
+        }
+        return hasERBOutput && (hasSensitiveLiteralText || hasTrimMarker);
+    }
+    hasRenderedWhitespaceSensitiveERBIf(node) {
+        return this.hasRenderedWhitespaceSensitiveContent(node.statements)
+            || (node.subsequent
+                ? this.hasRenderedWhitespaceSensitiveContent([node.subsequent])
+                : false);
     }
     pushRawToLastLine(text) {
         this.pushToLastLine(text);
@@ -70024,6 +70074,10 @@ class FormatPrinter extends Printer {
         });
     }
     visitERBIfNode(node) {
+        if (this.hasRenderedWhitespaceSensitiveERBIf(node)) {
+            this.pushRawToLastLine(IdentityPrinter.print(node));
+            return;
+        }
         this.trackBoundary(node, () => {
             if (this.inlineMode) {
                 this.printERBNode(node);
@@ -70289,7 +70343,10 @@ class FormatPrinter extends Printer {
                     hasSpaceBefore = true;
                 }
             }
-            const inlineContent = this.withInlineMode(() => this.capture(() => this.visit(child)).join(""));
+            let inlineContent = this.withInlineMode(() => this.capture(() => this.visit(child)).join(""));
+            if (isERBControlFlowNode(child)) {
+                inlineContent = inlineContent.replace(/\n$/, "");
+            }
             this.pushToLastLine((hasSpaceBefore ? " " : "") + inlineContent);
         }
     }

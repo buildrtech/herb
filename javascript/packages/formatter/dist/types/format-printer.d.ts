@@ -111,6 +111,9 @@ export declare class FormatPrinter extends Printer implements TextFlowDelegate, 
     visitHTMLElementBody(body: Node[], element: HTMLElementNode): void;
     private visitContentPreservingBody;
     private isContentPreservingERBBlock;
+    private hasRenderedWhitespaceSensitiveContent;
+    private hasRenderedWhitespaceSensitiveSiblingContent;
+    private hasRenderedWhitespaceSensitiveERBIf;
     private pushRawToLastLine;
     private visitContentPreservingERBBlock;
     private visitInlineElementBody;
