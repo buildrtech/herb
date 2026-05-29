@@ -9880,9 +9880,6 @@ class FormatPrinter extends Printer {
             if (isNode(node, ERBUnlessNode)) {
                 return this.hasRenderedWhitespaceSensitiveContent(node.statements);
             }
-            if (isNode(node, HTMLElementNode)) {
-                return this.hasRenderedWhitespaceSensitiveContent(node.body);
-            }
             return false;
         });
     }
@@ -9914,6 +9911,8 @@ class FormatPrinter extends Printer {
         return hasERBOutput && (hasSensitiveLiteralText || hasTrimMarker);
     }
     hasRenderedWhitespaceSensitiveERBIf(node) {
+        if (node.statements.some(statement => isNode(statement, HTMLElementNode)))
+            return false;
         return this.hasRenderedWhitespaceSensitiveContent(node.statements)
             || (node.subsequent
                 ? this.hasRenderedWhitespaceSensitiveContent([node.subsequent])

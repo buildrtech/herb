@@ -721,6 +721,8 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
   }
 
   private hasRenderedWhitespaceSensitiveERBIf(node: ERBIfNode): boolean {
+    if (node.statements.some(statement => isNode(statement, HTMLElementNode))) return false
+
     return this.hasRenderedWhitespaceSensitiveContent(node.statements)
       || (
         node.subsequent
