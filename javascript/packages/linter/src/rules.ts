@@ -1,8 +1,10 @@
 import type { RuleClass } from "./types.js"
 
+import { A11yDisabledAttributeRule } from "./rules/a11y-disabled-attribute.js"
 import { A11yNoAccesskeyAttributeRule } from "./rules/a11y-no-accesskey-attribute.js"
 import { A11yNoAriaUnsupportedElementsRule } from "./rules/a11y-no-aria-unsupported-elements.js"
 import { A11yNoAutofocusAttributeRule } from "./rules/a11y-no-autofocus-attribute.js"
+import { A11yNoRedundantImageAltRule } from "./rules/a11y-no-redundant-image-alt.js"
 
 import { ActionViewNoSilentHelperRule } from "./rules/actionview-no-silent-helper.js"
 import { ActionViewNoSilentRenderRule } from "./rules/actionview-no-silent-render.js"
@@ -103,9 +105,11 @@ import { SVGTagNameCapitalizationRule } from "./rules/svg-tag-name-capitalizatio
 import { TurboPermanentRequireIdRule } from "./rules/turbo-permanent-require-id.js"
 
 export const rules: RuleClass[] = [
+  A11yDisabledAttributeRule,
   A11yNoAccesskeyAttributeRule,
   A11yNoAriaUnsupportedElementsRule,
   A11yNoAutofocusAttributeRule,
+  A11yNoRedundantImageAltRule,
 
   ActionViewNoSilentHelperRule,
   ActionViewNoSilentRenderRule,
