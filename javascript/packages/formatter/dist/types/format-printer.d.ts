@@ -115,6 +115,7 @@ export declare class FormatPrinter extends Printer implements TextFlowDelegate, 
     private hasRenderedWhitespaceSensitiveSiblingContent;
     private hasRenderedWhitespaceSensitiveERBIf;
     private pushRawToLastLine;
+    private pushSourceSliceWithCurrentIndent;
     private sourceSliceForNode;
     private offsetForPosition;
     private isMultilineSourceNode;
@@ -173,6 +174,8 @@ export declare class FormatPrinter extends Printer implements TextFlowDelegate, 
      * Determines if the element content should be rendered inline
      */
     private shouldRenderElementContentInline;
+    private shouldPreserveMultilineInlineSourceElement;
+    private shouldPreserveSingleLineAttributeElement;
     /**
      * Determines if the close tag should be rendered inline (usually follows content decision)
      */

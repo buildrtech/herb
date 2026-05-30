@@ -69579,6 +69579,11 @@ class FormatPrinter extends Printer {
     visitHTMLElementNode(node) {
         this.elementStack.push(node);
         this.elementFormattingAnalysis.set(node, this.analyzeElementFormatting(node));
+        if (this.shouldPreserveMultilineInlineSourceElement(node)) {
+            this.trackBoundary(node, () => this.pushSourceSliceWithCurrentIndent(node));
+            this.elementStack.pop();
+            return;
+        }
         this.trackBoundary(node, () => {
             if (this.inlineMode && node.is_void && this.indentLevel === 0) {
                 const openTag = this.capture(() => this.visit(node.open_tag)).join('');
@@ -69722,6 +69727,13 @@ class FormatPrinter extends Printer {
         this.pushToLastLine(text);
         this.stringLineCount += text.split("\n").length - 1;
     }
+    pushSourceSliceWithCurrentIndent(node) {
+        const lines = this.sourceSliceForNode(node).split("\n");
+        this.pushWithIndent(lines[0]);
+        for (const line of lines.slice(1)) {
+            this.push(line);
+        }
+    }
     sourceSliceForNode(node) {
         if (!node.location)
             return IdentityPrinter.print(node);
@@ -69813,9 +69825,9 @@ class FormatPrinter extends Printer {
                     const hasPreviousNonWhitespace = index > 0 && isNonWhitespaceNode(body[index - 1]);
                     const hasNextNonWhitespace = index < body.length - 1 && isNonWhitespaceNode(body[index + 1]);
                     const hasMultipleNewlines = child.content.includes('\n\n');
-                    if (hasPreviousNonWhitespace && hasNextNonWhitespace && hasMultipleNewlines) {
+                    if (hasNextNonWhitespace && hasMultipleNewlines) {
                         this.push("");
-                        hasHandledSpacing = true;
+                        hasHandledSpacing = hasPreviousNonWhitespace;
                     }
                     continue;
                 }
@@ -70267,6 +70279,9 @@ class FormatPrinter extends Printer {
             return false;
         if (children.length === 0)
             return true;
+        if (this.shouldPreserveSingleLineAttributeElement(node)) {
+            return true;
+        }
         const hasNonInlineChildElements = children.some(child => {
             if (isNode(child, HTMLElementNode)) {
                 return !this.shouldRenderElementContentInline(child);
@@ -70315,6 +70330,42 @@ class FormatPrinter extends Printer {
             }
         }
         return false;
+    }
+    shouldPreserveMultilineInlineSourceElement(node) {
+        if (this.inlineMode)
+            return false;
+        if (!this.isMultilineSourceNode(node))
+            return false;
+        const source = this.sourceSliceForNode(node);
+        if (!/>\s*\S/.test(source.split("\n")[0]))
+            return false;
+        const children = filterSignificantChildren(node.body);
+        const openTagClosing = getOpenTagClosing(node);
+        const firstChild = children[0];
+        if (!openTagClosing || !firstChild?.location)
+            return false;
+        if (firstChild.location.start.line > openTagClosing.location.end.line)
+            return false;
+        const hasText = children.some(child => isNode(child, HTMLTextNode));
+        const hasERBOutput = children.some(child => isNode(child, ERBContentNode));
+        if (!hasText || !hasERBOutput)
+            return false;
+        return children.every(child => isNode(child, HTMLTextNode) || isNode(child, ERBContentNode));
+    }
+    shouldPreserveSingleLineAttributeElement(node) {
+        if (this.isMultilineSourceNode(node))
+            return false;
+        if (this.sourceSliceForNode(node).length > this.maxLineLength + 5)
+            return false;
+        const attributes = filterNodes(getOpenTagChildren(node), HTMLAttributeNode);
+        if (attributes.length === 0)
+            return false;
+        if (attributes.some(attribute => IdentityPrinter.print(attribute).includes("<%")))
+            return false;
+        const children = filterSignificantChildren(node.body);
+        if (!children.every(child => isNode(child, HTMLTextNode)))
+            return false;
+        return this.tryRenderInlineFull(node, getTagName(node), attributes, node.body) !== null;
     }
     /**
      * Determines if the close tag should be rendered inline (usually follows content decision)

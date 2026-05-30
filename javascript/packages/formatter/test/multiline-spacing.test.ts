@@ -81,6 +81,15 @@ describe("Multiline Element Spacing", () => {
     `)
   })
 
+  test("preserves leading blank line before first child", () => {
+    expectFormattedToMatch(dedent`
+      <div class="flex flex-wrap gap-3 items-center">
+
+        <%= menu_content %>
+      </div>
+    `)
+  })
+
   test("mixed single-line and multiline elements", () => {
     const source = dedent`
       <div>

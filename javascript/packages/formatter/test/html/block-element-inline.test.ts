@@ -46,6 +46,28 @@ describe("Block Elements with Inline Content", () => {
     `)
   })
 
+  test("element with attributes and source-inline text preserves source layout", () => {
+    const buildrFormatter = new Formatter(Herb, {
+      indentWidth: 2,
+      maxLineLength: 80,
+      noSplitClasses: true
+    })
+    const source = dedent`
+      <p class="text-xs font-medium text-gray-500 dark:text-gray-400">Credit balance</p>
+    `
+
+    expect(buildrFormatter.format(source)).toEqual(source)
+  })
+
+  test("multiline inline text with ERB preserves source layout", () => {
+    const source = dedent`
+      <h3 class="text-gray-900">Division
+        <%= division %></h3>
+    `
+
+    expect(formatter.format(source)).toEqual(source)
+  })
+
   test("div with mixed text and inline elements stays inline when short", () => {
     const source = dedent`
       <div>complex <span>nested</span> content</div>
