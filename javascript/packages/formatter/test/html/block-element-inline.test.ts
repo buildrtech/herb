@@ -59,6 +59,19 @@ describe("Block Elements with Inline Content", () => {
     expect(buildrFormatter.format(source)).toEqual(source)
   })
 
+  test("long element with attributes and source-inline text preserves source layout", () => {
+    const buildrFormatter = new Formatter(Herb, {
+      indentWidth: 2,
+      maxLineLength: 80,
+      noSplitClasses: true
+    })
+    const source = dedent`
+      <p class="mb-3 text-sm text-gray-500 dark:text-gray-400">Select the measurement types that apply to this group type</p>
+    `
+
+    expect(buildrFormatter.format(source)).toEqual(source)
+  })
+
   test("element with attributes and source-inline ERB preserves source layout", () => {
     const buildrFormatter = new Formatter(Herb, {
       indentWidth: 2,

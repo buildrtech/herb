@@ -70355,7 +70355,7 @@ class FormatPrinter extends Printer {
     shouldPreserveSingleLineAttributeElement(node) {
         if (this.isMultilineSourceNode(node))
             return false;
-        if (this.sourceSliceForNode(node).length > this.maxLineLength + 5)
+        if (this.sourceSliceForNode(node).length > this.maxLineLength + 40)
             return false;
         const attributes = filterNodes(getOpenTagChildren(node), HTMLAttributeNode);
         if (attributes.length === 0)
