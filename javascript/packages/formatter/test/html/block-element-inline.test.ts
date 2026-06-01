@@ -89,6 +89,23 @@ describe("Block Elements with Inline Content", () => {
     expect(buildrFormatter.format(source)).toEqual(source)
   })
 
+  test("element without attributes and source-inline ERB preserves source layout", () => {
+    const buildrFormatter = new Formatter(Herb, {
+      indentWidth: 2,
+      maxLineLength: 80,
+      noSplitClasses: true
+    })
+    const source = dedent`
+      <div>
+        <div>
+          <span><%= formatted_currency(accumulator.total, precision: 0) %></span>
+        </div>
+      </div>
+    `
+
+    expect(buildrFormatter.format(source)).toEqual(source)
+  })
+
   test("multiline inline text with ERB preserves source layout", () => {
     const source = dedent`
       <h3 class="text-gray-900">Division

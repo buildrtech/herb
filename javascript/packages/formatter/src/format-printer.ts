@@ -1512,10 +1512,15 @@ export class FormatPrinter extends Printer implements TextFlowDelegate, Attribut
     if (this.sourceSliceForNode(node).length > this.maxLineLength + 40) return false
 
     const attributes = filterNodes(getOpenTagChildren(node), HTMLAttributeNode)
-    if (attributes.length === 0) return false
     if (attributes.some(attribute => IdentityPrinter.print(attribute).includes("<%"))) return false
 
     const children = filterSignificantChildren(node.body)
+    const hasERBContent = children.some(child => {
+      return isNode(child, ERBContentNode) && !isERBCommentNode(child)
+    })
+
+    if (attributes.length === 0 && !hasERBContent) return false
+
     const childrenAreInlineRenderable = children.every(child => {
       return isNode(child, HTMLTextNode)
         || (isNode(child, ERBContentNode) && !isERBCommentNode(child))
