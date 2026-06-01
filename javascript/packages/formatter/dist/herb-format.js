@@ -70363,7 +70363,11 @@ class FormatPrinter extends Printer {
         if (attributes.some(attribute => IdentityPrinter.print(attribute).includes("<%")))
             return false;
         const children = filterSignificantChildren(node.body);
-        if (!children.every(child => isNode(child, HTMLTextNode)))
+        const childrenAreInlineRenderable = children.every(child => {
+            return isNode(child, HTMLTextNode)
+                || (isNode(child, ERBContentNode) && !isERBCommentNode(child));
+        });
+        if (!childrenAreInlineRenderable)
             return false;
         return this.tryRenderInlineFull(node, getTagName(node), attributes, node.body) !== null;
     }
